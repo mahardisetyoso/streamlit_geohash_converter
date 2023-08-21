@@ -1,2 +1,19 @@
+[global]
+disableWatchdogWarning = false
+disableWidgetStateDuplicationWarning = false
+
 [client]
 showErrorDetails = false
+caching = true
+displayEnabled = true
+toolbarMode = "auto"
+
+[runner]
+fastReruns = true
+
+[deprecation]
+showfileUploaderEncoding = false
+showPyplotGlobalUse = false
+
+[theme]
+base = light
