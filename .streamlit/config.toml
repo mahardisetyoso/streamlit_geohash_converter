@@ -15,5 +15,3 @@ fastReruns = true
 showfileUploaderEncoding = false
 showPyplotGlobalUse = false
 
-[theme]
-base = light
