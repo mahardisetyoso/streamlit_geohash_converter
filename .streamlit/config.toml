@@ -8,6 +8,9 @@ caching = true
 displayEnabled = true
 toolbarMode = "auto"
 
+[server]
+headless = true
+
 [runner]
 fastReruns = true
 
