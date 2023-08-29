@@ -6,7 +6,7 @@ import streamlit as st
 from polygeohasher import polygeohasher
 from streamlit_folium import st_folium
 
-string = st.text_input('Please copy paste your Geohash separated by comma here','qqggtv,qqguxu,qqggu7,qquhch')
+string = st.text_input('Please copy paste your Geohash separated by comma here and avoid spaces between geohash character','qqggtv,qqguxu,qqggu7,qquhch')
 data_list = string.split(',')
 df = pd.DataFrame(data_list)
 df.columns = ['geohash']
