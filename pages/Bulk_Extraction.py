@@ -55,7 +55,7 @@ try:
       file_name='geohash_file.csv',
       mime='text/csv',
   )
-except (TypeError, NameError):
+except (TypeError, NameError, AttributeError):
   pass
 
 
