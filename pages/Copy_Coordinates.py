@@ -28,7 +28,7 @@ df_geom = df.groupby('Name').agg(geometry = pd.NamedAgg(column='points', aggfunc
 gpd_geom = gpd.GeoDataFrame(df_geom, geometry=df_geom['geometry'], crs="EPSG:4326")
 geojson=gpd_geom.to_json()
 
-button = st.number_input('Insert a Geohash number', 7)
+button = st.number_input('Insert a Geohash number',2)
 number = int(button)
 geohash_gdf = polygeohasher.create_geohash_list(gpd_geom, number,inner=False)
 geohash_gdf_list = polygeohasher.geohashes_to_geometry(geohash_gdf,"geohash_list")

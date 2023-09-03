@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "jakarta",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": 1 }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ 106.822515516267387, -6.170551680470149 ], [ 106.829926980859213, -6.170643404840976 ], [ 106.832233453242594, -6.180396672295653 ], [ 106.822392504406935, -6.181283324062611 ], [ 106.822515516267387, -6.170551680470149 ] ] ] ] } }
+]
+}
