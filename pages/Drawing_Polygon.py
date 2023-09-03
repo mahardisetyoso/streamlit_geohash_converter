@@ -9,7 +9,6 @@ from shapely.geometry import Polygon
 from shapely import wkt
 from streamlit_folium import st_folium
 from folium.plugins import Draw
-from streamlit_folium import folium_static
 
 try:
     button = st.number_input('Insert a Geohash number')
