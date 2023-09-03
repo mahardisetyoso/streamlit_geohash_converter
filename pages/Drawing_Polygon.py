@@ -65,5 +65,5 @@ try:
      mime='text/csv',
     )
 
-except (TypeError, NameError, AttributeError):
+except (TypeError, NameError, AttributeError, fiona.errors.DriverError):
   pass
