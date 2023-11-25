@@ -7,5 +7,5 @@ session_info==1.0.0
 shapely==2.0.1
 streamlit==1.23.1
 streamlit_folium
-pyperclip==1.8.2
-PyQt4==4.11.4
+pyperclip
+PyQt4
