@@ -9,10 +9,10 @@ import folium
 from streamlit_folium import st_folium
 
 try:
-     CENTER_START = [-6.189991467509655, 106.84617273604809]
+     CENTER_START = [-6.175337169759785, 106.82713616185086]
 
      if "center" not in st.session_state:
-          st.session_state["center"] = [-6.189991467509655, 106.84617273604809]
+          st.session_state["center"] = [-6.175337169759785, 106.82713616185086]
 
 
      coordinates = st.text_input("PLease enter coordinates","-6.171046259577523, 106.82269788734317 ,-6.180712281012674, 106.8225072511238 ,-6.180295319024069, 106.83230595281657 ,-6.170894634306194, 106.82952266400855 ,-6.171046259577523, 106.82269788734317")
@@ -51,7 +51,7 @@ try:
 
      st.session_state["center"] = [latitude, longitude]
 
-     button = st.number_input('Insert a Geohash number',5)
+     button = st.number_input('Insert a Geohash number',3)
      number = int(button)
      geohash_gdf = polygeohasher.create_geohash_list(gpd_geom, number,inner=False)
      geohash_gdf_list = polygeohasher.geohashes_to_geometry(geohash_gdf,"geohash_list")

@@ -6,10 +6,10 @@ import streamlit as st
 from polygeohasher import polygeohasher
 from streamlit_folium import st_folium
 
-CENTER_START = [-6.189991467509655, 106.84617273604809]
+CENTER_START = [-6.175337169759785, 106.82713616185086]
 
 if "center" not in st.session_state:
-    st.session_state["center"] = [-6.189991467509655, 106.84617273604809]
+    st.session_state["center"] = [-6.175337169759785, 106.82713616185086]
 
 string = st.text_input('Please copy paste your Geohash separated by comma here and avoid spaces between geohash character','qqguyu7,qqguyur,qqguyu4,qqguygg,qqguyu1,qqguygr,qqguyff,qqguyuq,qqguz50,qqguyfu,qqguz52,qqguyun,qqguygm,qqguygu,qqguyg7,qqguygq,qqguygx,qqguyup,qqguyfv,qqguyuk,qqguygk,qqguyfg,qqguyut,qqguygz,qqguyfy,qqguyfc,qqguygc,qqguyg4,qqguyfz,qqguyux,qqguyg9,qqguyg3,qqguyus,qqguyuw,qqguyg1,qqguygy,qqguygs,qqguyud,qqguyu3,qqguyue,qqguz4b,qqguyg6,qqguygd,qqguyum,qqguz58,qqguygh,qqguyuj,qqguygv,qqguygj,qqguygn,qqguyu5,qqguyg5,qqguyuh,qqguygp,qqguygf,qqguyu6,qqguyu9,qqguygw,qqguyge,qqguygt')
 data_list = string.split(',')

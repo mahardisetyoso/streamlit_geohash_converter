@@ -1,68 +1,70 @@
+# Define map
 import folium
-import pandas as pd
-import geopandas as gpd
 import json
-import numpy as np
 import streamlit as st
+import geopandas as gpd
+import pyperclip
 from polygeohasher import polygeohasher
 from shapely.geometry import Polygon
-from shapely import wkt
 from streamlit_folium import st_folium
-from folium.plugins import Draw
+from folium.plugins import Geocoder 
+from newdraw import NewDraw
+from shapely import wkt
 
 try:
-    button = st.number_input('Insert a Geohash number')
-    number = int(button)
+    button = st.number_input('Insert a Geohash number', 3)
+    number = int(button) 
 
-    m = folium.Map([-6.175300560878783, 106.82701205991948],zoom_start=16)
-    Draw(export=False).add_to(m)
+    m = folium.Map(location=[-6.169689493684541, 106.82936319156342], zoom_control=12)
 
-    c1, c2 = st.columns(2)
-    with c1:
-        output = st_folium(m, width=1200, height=800)
-        geojson_str = json.dumps(output)
-        geojson_data = gpd.read_file(geojson_str, driver='GeoJSON')
-        gdf = gpd.GeoDataFrame.from_features(geojson_data, crs="EPSG:4326")
-        gdf['centroid'] = gdf['geometry'].centroid
-        gdf['long'] = gdf.centroid.map(lambda p: p.x)
-        gdf['lat'] = gdf.centroid.map(lambda p: p.y)
-        row = gdf.iloc[0]
-        location = f"{row['lat']},{row['long']}"
-        gdf = gdf.drop('centroid', axis = 1)
-        geojson=gdf.to_json()
+    # Define FeatureGroup for drawings
+    draw_group = folium.FeatureGroup(name='Drawings', show=True, overlay=True, control=True)
+    draw_group.add_to(m)
+    Geocoder(add_marker=True).add_to(m)
 
-        geohash_gdf = polygeohasher.create_geohash_list(gdf, number,inner=False)
-        geohash_gdf_list = polygeohasher.geohashes_to_geometry(geohash_gdf,"geohash_list")
-        gpd_geohash_geom = gpd.GeoDataFrame(geohash_gdf_list, geometry=geohash_gdf_list['geometry'], crs="EPSG:4326")
-        geojson_geohash = gpd_geohash_geom.to_json()
+    # Pass the draw_group internal folium name in edit_options
+    NewDraw(
+        edit_options={
+            'featureGroup': draw_group.get_name(),
+        }).add_to(m)
+        
+    tiles = ['Cartodb Positron','openstreetmap','Cartodb dark_matter']
+    for tile in tiles:
+        folium.TileLayer(tile).add_to(m)     
 
-        folium.GeoJson(
-            geojson, 
-            name="geojson",
-            style_function = lambda x: {
-                'color': 'red',
-                'weight': 4,
-                'interactive' : True
-            }).add_to(m)
+    # Optionally, define LayerControl to disable hide the Drawings FeatureGroup
+    lc = folium.LayerControl(position='bottomleft', collapsed=False)
+    lc.add_to(m)
 
-    # Add the geohash layer on top of the drawing polygon layer
-        fg = folium.FeatureGroup(name="Geohash")
-        fg.add_child(folium.features.GeoJson(geojson_geohash,
-                                tooltip = folium.GeoJsonTooltip(fields = ['geohash_list']), 
-                                style_function = lambda x:{
-                                                'color': 'blue'                                   
-                                            })).add_to(m)
+    # Render the map
+    st.session_state["st_data"] = st_folium(m, 
+                        width='100%',
+                        returned_objects=['last_object_clicked', 'all_drawings', 'last_active_drawing'],
+                        feature_group_to_add=draw_group)
 
-    with c2:
-        output = st_folium(m, feature_group_to_add=fg, center = location, width=1200, height=800)
 
-    csv=gpd_geohash_geom.to_csv()
-    st.download_button(
-        label="Download data as CSV",
-        data=csv,
-        file_name='geohash_file.csv',
-     mime='text/csv',
-    )
+    geojson_str = json.dumps(st.session_state["st_data"])
+    geojson_data = gpd.read_file(geojson_str, driver='GeoJSON')
+    gdf = gpd.GeoDataFrame.from_features(geojson_data, crs="EPSG:4326")
+    geohash_gdf = polygeohasher.create_geohash_list(gdf, number,inner=False)
+    geohash_gdf_list = polygeohasher.geohashes_to_geometry(geohash_gdf,"geohash_list")
+    gpd_geohash_geom = gpd.GeoDataFrame(geohash_gdf_list, geometry=geohash_gdf_list['geometry'], crs="EPSG:4326")
+    geohash_output = gpd_geohash_geom['geohash_list'].str.cat(sep=',')
 
-except (TypeError, NameError, AttributeError, fiona.errors.DriverError, fiona.errors.NameError):
+    a=st.text_area('Please copy this geohash list code and use Geohash Visualization for coverage checking', geohash_output)
+
+    if st.button('Copy'):
+        pyperclip.copy(a)
+        st.success('Text copied successfully!')
+except (TypeError, NameError, AttributeError):
   pass
+
+csv=gpd_geohash_geom.to_csv()
+st.download_button(
+    label="Download data as CSV",
+    data=csv,
+    file_name='geohash_file.csv',
+    mime='text/csv',
+)
+
+
