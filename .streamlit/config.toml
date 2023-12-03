@@ -1,22 +1,5 @@
-[global]
-disableWatchdogWarning = false
-disableWidgetStateDuplicationWarning = false
-
-[client]
-showErrorDetails = false
-caching = true
-displayEnabled = true
-toolbarMode = "auto"
-
-[server]
-headless = true
-
 [runner]
 fastReruns = true
-
-[deprecation]
-showfileUploaderEncoding = false
-showPyplotGlobalUse = false
 
 [theme]
 primaryColor="#F63366"
