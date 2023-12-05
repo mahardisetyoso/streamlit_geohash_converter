@@ -54,7 +54,7 @@ try:
     a=st.text_area('Please copy this geohash list code and use Geohash Visualization for coverage checking', geohash_output)
 
     if st.button('Copy'):
-        pyperclip.copy(a)
+        st.code(a)
         st.success('Text copied successfully!')
 except (TypeError, NameError, AttributeError):
   pass
@@ -66,11 +66,6 @@ st.download_button(
     file_name='geohash_file.csv',
     mime='text/csv',
 )
-file_geojson = gpd_geohash_geom.to_json()
-st.download_button(
-    label="Download data as JSON",
-    data=file_geojson,
-    file_name='geohash_file.geojson',
-)
+
 
 
