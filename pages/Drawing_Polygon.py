@@ -66,5 +66,11 @@ st.download_button(
     file_name='geohash_file.csv',
     mime='text/csv',
 )
+file_geojson = gpd_geohash_geom.to_json()
+  st.download_button(
+      label="Download data as JSON",
+      data=file_geojson,
+      file_name='geohash_file.geojson',
+  )
 
 
