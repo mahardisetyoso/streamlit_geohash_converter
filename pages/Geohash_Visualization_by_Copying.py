@@ -1,53 +1,193 @@
+import re
 import folium
 import pandas as pd
 import geopandas as gpd
-import numpy as np
 import streamlit as st
+from folium.plugins import MarkerCluster
 from polygeohasher import polygeohasher
 from streamlit_folium import st_folium
 
-CENTER_START = [-6.175337169759785, 106.82713616185086]
+st.set_page_config(page_title="Geohash Visualizer", layout="wide")
 
-if "center" not in st.session_state:
-    st.session_state["center"] = [-6.175337169759785, 106.82713616185086]
+CENTER_FALLBACK = [-6.175337169759785, 106.82713616185086]
+VALID_RE = re.compile(r"^[0123456789bcdefghjkmnpqrstuvwxyz]+$")  # alfabet geohash (tanpa a/i/l/o)
 
-string = st.text_input('Please copy paste your Geohash separated by comma here and avoid spaces between geohash character','qqguyu7,qqguyur,qqguyu4,qqguygg,qqguyu1,qqguygr,qqguyff,qqguyuq,qqguz50,qqguyfu,qqguz52,qqguyun,qqguygm,qqguygu,qqguyg7,qqguygq,qqguygx,qqguyup,qqguyfv,qqguyuk,qqguygk,qqguyfg,qqguyut,qqguygz,qqguyfy,qqguyfc,qqguygc,qqguyg4,qqguyfz,qqguyux,qqguyg9,qqguyg3,qqguyus,qqguyuw,qqguyg1,qqguygy,qqguygs,qqguyud,qqguyu3,qqguyue,qqguz4b,qqguyg6,qqguygd,qqguyum,qqguz58,qqguygh,qqguyuj,qqguygv,qqguygj,qqguygn,qqguyu5,qqguyg5,qqguyuh,qqguygp,qqguygf,qqguyu6,qqguyu9,qqguygw,qqguyge,qqguygt')
-data_list = string.split(',')
-df = pd.DataFrame(data_list)
-df.columns = ['geohash']
+# -------------------- Helpers --------------------
+def clean_and_tokenize(text: str):
+    if not text:
+        return []
+    s = text.lower()
+    s = re.sub(r"[;\s]+", ",", s)      # semua whitespace/; -> koma
+    s = re.sub(r"\s*,\s*", ",", s)     # trim spasi di sekitar koma
+    parts = s.split(",")
+    out, seen = [], set()
+    for p in parts:
+        if p and VALID_RE.match(p) and (1 <= len(p) <= 12) and p not in seen:
+            seen.add(p)
+            out.append(p)
+    return out
 
-geohash_df_list = polygeohasher.geohashes_to_geometry(df,'geohash')
-gpd_geohash_geom = gpd.GeoDataFrame(geohash_df_list, geometry = geohash_df_list['geometry'], crs = "EPSG:4326")
-geojson_geohash = gpd_geohash_geom.to_json()
+# Palet warna diskrit untuk precision 1..12
+PRECISION_COLORS = {
+    1:"#1f77b4", 2:"#ff7f0e", 3:"#2ca02c", 4:"#d62728",
+    5:"#9467bd", 6:"#8c564b", 7:"#e377c2", 8:"#7f7f7f",
+    9:"#bcbd22", 10:"#17becf", 11:"#a55194", 12:"#393b79"
+}
 
-centroid = gpd_geohash_geom.unary_union.centroid
+# -------------------- Sidebar --------------------
+st.title("Geohash Visualization by Copy-Paste")
 
+example = (
+    "qqguyu7,qqguyur,qqguyu4,qqguygg,qqguyu1,qqguygr,qqguyff,qqguyuq,"
+    "qqguz50,qqguyfu,qqguz52,qqguyun,qqguygm,qqguygu,qqguyg7,qqguygq"
+)
+text = st.text_area(
+    "Paste geohash di sini (boleh kolom/komaan/campur newline). "
+    "Akan dibersihkan: lowercase, tanpa spasi, alfabet valid, dedup.",
+    value=example, height=180,
+)
+
+with st.sidebar:
+    st.header("Pengaturan Tampilan")
+    vis_mode = st.radio(
+        "Mode visualisasi", 
+        options=["Polygons", "Centroid markers (cluster)"], 
+        index=0
+    )
+    color_mode = st.selectbox(
+        "Warna", 
+        options=["Single color", "By precision length"], 
+        index=1
+    )
+    base_color = st.color_picker("Warna default (untuk Single color)", "#d62728")
+    fill_polygon = st.checkbox("Isi polygon (fill)", value=False)
+    weight = st.slider("Garis (weight)", 1, 6, 2)
+    opacity = st.slider("Opacity garis", 0.1, 1.0, 1.0, step=0.1)
+    fill_opacity = st.slider("Opacity fill", 0.0, 1.0, 0.25, step=0.05)
+    max_polys = st.number_input(
+        "Batas render polygon (untuk performa)", min_value=100, max_value=20000, value=5000, step=100
+    )
+
+# -------------------- Preprocess --------------------
+geohashes = clean_and_tokenize(text)
+
+colA, colB, colC = st.columns(3)
+with colA:
+    st.metric("Chars input (raw)", len(text))
+with colB:
+    st.metric("Geohash valid & unik", len(geohashes))
+with colC:
+    st.write("Contoh 10 geohash:")
+    st.code(", ".join(geohashes[:10]) if geohashes else "-", language="text")
+
+if not geohashes:
+    st.warning("Tidak ada geohash valid setelah pembersihan. Cek input.")
+    m = folium.Map(location=CENTER_FALLBACK, zoom_start=12)
+    st_folium(m, width=1200, height=800)
+    st.stop()
+
+df = pd.DataFrame({"geohash": geohashes})
+
+# -------------------- Geometries --------------------
 try:
-    latitude = float(centroid.y)
-    longitude = float(centroid.x)
-except ValueError:
-    latitude = None
-    longitude = None
+    geohash_df_list = polygeohasher.geohashes_to_geometry(df, "geohash")
+except Exception as e:
+    st.error(f"Gagal mengonversi geohash ke polygon: {e}")
+    m = folium.Map(location=CENTER_FALLBACK, zoom_start=12)
+    st_folium(m, width=1200, height=800)
+    st.stop()
 
-if latitude is None or longitude is None:
-    st.error("Invalid latitude or longitude value. Please enter valid latitude and longitude values separated by a comma.")
+gdf = gpd.GeoDataFrame(geohash_df_list, geometry=geohash_df_list["geometry"], crs="EPSG:4326")
+if gdf.empty or gdf.geometry.is_empty.all():
+    st.error("Geometry kosong setelah konversi.")
+    m = folium.Map(location=CENTER_FALLBACK, zoom_start=12)
+    st_folium(m, width=1200, height=800)
+    st.stop()
+
+# Tambah kolom precision (panjang geohash)
+gdf["precision"] = gdf["geohash"].astype(str).str.len()
+
+# Center ke centroid union
+try:
+    centroid = gdf.unary_union.centroid
+    center = [float(centroid.y), float(centroid.x)]
+except Exception:
+    center = CENTER_FALLBACK
+
+# -------------------- Map --------------------
+m = folium.Map(location=center, zoom_start=14)
+
+if vis_mode == "Polygons":
+    # Batasi jumlah polygon (performa)
+    if len(gdf) > max_polys:
+        st.info(f"Render dibatasi {max_polys} dari {len(gdf)} polygon demi performa.")
+        gdf_render = gdf.iloc[:max_polys].copy()
+    else:
+        gdf_render = gdf
+
+    # Style function
+    if color_mode == "By precision length":
+        def style_fn(feat):
+            prec = feat["properties"].get("precision", 0)
+            col = PRECISION_COLORS.get(int(prec), base_color)
+            return {
+                "color": col,
+                "weight": weight,
+                "opacity": opacity,
+                "fillColor": col,
+                "fillOpacity": fill_opacity if fill_polygon else 0.0,
+            }
+        tooltip_fields = ["geohash", "precision"]
+    else:
+        def style_fn(_):
+            return {
+                "color": base_color,
+                "weight": weight,
+                "opacity": opacity,
+                "fillColor": base_color,
+                "fillOpacity": fill_opacity if fill_polygon else 0.0,
+            }
+        tooltip_fields = ["geohash"]
+
+    folium.GeoJson(
+        data=gdf_render.to_json(),
+        name="geohash-polygons",
+        tooltip=folium.GeoJsonTooltip(fields=tooltip_fields),
+        style_function=style_fn,
+        control=True,
+        embed=False,
+        zoom_on_click=False,
+        highlight_function=lambda _: {"weight": weight + 1},
+    ).add_to(m)
+
 else:
-    st.success("Successfully converted latitude and longitude values to float.")
+    # Centroid markers + cluster
+    mc = MarkerCluster(name="geohash-centroids", show=True)
+    for _, row in gdf.iterrows():
+        c = row.geometry.centroid
+        folium.Marker(
+            location=[c.y, c.x],
+            tooltip=f"geohash: {row['geohash']} | precision: {row['precision']}",
+            icon=folium.Icon(color="blue", icon="info-sign"),
+        ).add_to(mc)
+    mc.add_to(m)
 
+folium.LayerControl(collapsed=False).add_to(m)
 
-st.session_state["center"] = [latitude, longitude]
+st_folium(
+    m,
+    center=center,
+    width=1200,
+    height=800,
+)
 
-m = folium.Map(location=CENTER_START,zoom_start=14)
-folium.GeoJson(
-     geojson_geohash, 
-     name="geohash",
-     tooltip = folium.GeoJsonTooltip(fields = ['geohash']),
-     style_function = lambda x: {
-        'color': 'red',
-        'weight': 4,
-        'interactive' : True
-    }).add_to(m)
-st_data = st_folium(m, 
-                    center=st.session_state["center"],
-                    width=1200, 
-                    height=800)
+# -------------------- Utilitas output geohash bersih --------------------
+clean_joined = ",".join(geohashes)
+with st.expander("Lihat/Salin geohash yang sudah dibersihkan (tanpa spasi, dipisah koma)"):
+    st.code(clean_joined, language="text")
+    st.download_button(
+        "Download geohash_bersih.txt",
+        data=clean_joined,
+        file_name="geohash_bersih.txt",
+        mime="text/plain",
+    )
