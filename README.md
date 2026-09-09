@@ -116,6 +116,19 @@ polygeohasher
 
 ## How It Works
 
+<p align="center">
+  <img src="assets/architecture-preview.png" alt="Architecture diagram: four input paths converge on polygeohasher, then Folium rendering and exports" width="900">
+</p>
+
+<p align="center">
+  <em>Generated from this codebase with <a href="https://skills.sh/tt-a1i/archify">archify</a>. The interactive version
+  (<a href="architecture.html">architecture.html</a>) adds pan/zoom, dark mode, guided views, and per-node source
+  citations &mdash; download it and open in a browser, since GitHub shows HTML as source.</em>
+</p>
+
+<details>
+<summary>Text version</summary>
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  USER INPUT                                              │
@@ -145,6 +158,8 @@ polygeohasher
 │  └─────────────────────────────────────────┘             │
 └─────────────────────────────────────────────────────────┘
 ```
+
+</details>
 
 ---
 
@@ -201,6 +216,8 @@ streamlit_geohash_converter/
 ├── newdraw.py                           # Custom Leaflet.draw extension
 ├── requirements.txt                     # Python dependencies
 ├── runtime.txt                          # Python 3.12
+├── architecture.html                    # Interactive architecture diagram
+├── architecture.json                    # Diagram source spec (archify)
 ├── .streamlit/config.toml               # Theme configuration
 └── pages/
     ├── Copy_Coordinates.py              # Paste coords → geohash
