@@ -1,0 +1,475 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Streamlit Geohash Converter",
+    "quality_profile": "showcase",
+    "locale": "en",
+    "viewBox": [
+      1360,
+      620
+    ],
+    "repository": {
+      "url": "https://github.com/mahardisetyoso/streamlit_geohash_converter",
+      "revision": "bd5ddfc1e00d101fa022bb65114e79f16619f646"
+    },
+    "views": [
+      {
+        "id": "paste-path",
+        "label": "Paste coordinates",
+        "focus": [
+          "browser",
+          "home",
+          "copy_coords",
+          "geo_stack",
+          "polygeohasher",
+          "exports"
+        ],
+        "note": "The shortest path: a comma-separated lat/long list becomes geohash cells and a download."
+      },
+      {
+        "id": "draw-path",
+        "label": "Draw on the map",
+        "focus": [
+          "draw_polygon",
+          "session_state",
+          "geo_stack",
+          "polygeohasher"
+        ],
+        "note": "Drawn shapes survive Streamlit reruns because session_state holds them between script runs."
+      },
+      {
+        "id": "render-path",
+        "label": "Map rendering",
+        "focus": [
+          "polygeohasher",
+          "map_render",
+          "basemaps",
+          "browser"
+        ],
+        "note": "Cell polygons become a Folium map embedded back into the Streamlit page."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "browser",
+      "type": "external",
+      "label": "Browser",
+      "sublabel": "Leaflet map + widgets",
+      "pos": [
+        30,
+        355
+      ],
+      "size": [
+        140,
+        78
+      ]
+    },
+    {
+      "id": "home",
+      "type": "frontend",
+      "label": "Home.py",
+      "sublabel": "Streamlit entrypoint",
+      "tag": "python-3.12",
+      "pos": [
+        215,
+        355
+      ],
+      "size": [
+        165,
+        78
+      ],
+      "sources": [
+        {
+          "path": "Home.py",
+          "line": 1,
+          "end_line": 18,
+          "label": "landing page"
+        },
+        {
+          "path": "runtime.txt",
+          "line": 1,
+          "label": "runtime pin"
+        }
+      ]
+    },
+    {
+      "id": "session_state",
+      "type": "database",
+      "label": "st.session_state",
+      "sublabel": "shared across pages",
+      "tag": "center, features_fc",
+      "pos": [
+        215,
+        495
+      ],
+      "size": [
+        165,
+        78
+      ],
+      "sources": [
+        {
+          "path": "pages/Drawing_Polygon.py",
+          "line": 62,
+          "end_line": 63,
+          "label": "features_fc"
+        },
+        {
+          "path": "pages/Copy_Coordinates.py",
+          "line": 13,
+          "end_line": 14,
+          "label": "center"
+        }
+      ]
+    },
+    {
+      "id": "copy_coords",
+      "type": "frontend",
+      "label": "Copy_Coordinates.py",
+      "sublabel": "pasted lat,long list",
+      "pos": [
+        440,
+        40
+      ],
+      "size": [
+        230,
+        78
+      ],
+      "sources": [
+        {
+          "path": "pages/Copy_Coordinates.py",
+          "line": 16,
+          "end_line": 33,
+          "label": "text_input to Polygon"
+        }
+      ]
+    },
+    {
+      "id": "bulk_upload",
+      "type": "frontend",
+      "label": "Bulk_Extraction.py",
+      "sublabel": "GeoJSON file upload",
+      "pos": [
+        440,
+        145
+      ],
+      "size": [
+        230,
+        78
+      ],
+      "sources": [
+        {
+          "path": "pages/Bulk_Extraction.py",
+          "line": 17,
+          "end_line": 25,
+          "label": "file_uploader"
+        }
+      ]
+    },
+    {
+      "id": "draw_polygon",
+      "type": "frontend",
+      "label": "Drawing_Polygon.py",
+      "sublabel": "draw shapes on map",
+      "tag": "newdraw.py + leaflet.draw 1.0.2",
+      "pos": [
+        440,
+        250
+      ],
+      "size": [
+        230,
+        78
+      ],
+      "sources": [
+        {
+          "path": "pages/Drawing_Polygon.py",
+          "line": 69,
+          "end_line": 80,
+          "label": "draw group + NewDraw"
+        },
+        {
+          "path": "newdraw.py",
+          "line": 120,
+          "end_line": 127,
+          "label": "CDN assets"
+        }
+      ]
+    },
+    {
+      "id": "paste_geohash",
+      "type": "frontend",
+      "label": "Geohash_Visualization_by_Copying.py",
+      "sublabel": "pasted geohash list",
+      "pos": [
+        440,
+        355
+      ],
+      "size": [
+        230,
+        78
+      ],
+      "sources": [
+        {
+          "path": "pages/Geohash_Visualization_by_Copying.py",
+          "line": 20,
+          "end_line": 42,
+          "label": "clean_and_tokenize"
+        }
+      ]
+    },
+    {
+      "id": "geo_stack",
+      "type": "backend",
+      "label": "GeoPandas + Shapely",
+      "sublabel": "GeoDataFrame assembly",
+      "tag": "EPSG:4326 / 3857",
+      "pos": [
+        830,
+        145
+      ],
+      "size": [
+        195,
+        78
+      ],
+      "sources": [
+        {
+          "path": "requirements.txt",
+          "line": 2,
+          "end_line": 7,
+          "label": "pinned deps"
+        }
+      ]
+    },
+    {
+      "id": "polygeohasher",
+      "type": "backend",
+      "label": "polygeohasher",
+      "sublabel": "geohash engine",
+      "tag": "inner coverage flag",
+      "pos": [
+        830,
+        355
+      ],
+      "size": [
+        195,
+        78
+      ],
+      "sources": [
+        {
+          "path": "pages/Drawing_Polygon.py",
+          "line": 103,
+          "end_line": 118,
+          "label": "list + geometry"
+        }
+      ]
+    },
+    {
+      "id": "map_render",
+      "type": "backend",
+      "label": "folium + streamlit-folium",
+      "sublabel": "st_folium bridge",
+      "pos": [
+        1100,
+        355
+      ],
+      "size": [
+        200,
+        78
+      ],
+      "sources": [
+        {
+          "path": "pages/Geohash_Visualization_by_Copying.py",
+          "line": 168,
+          "end_line": 193,
+          "label": "GeoJson layers"
+        }
+      ]
+    },
+    {
+      "id": "basemaps",
+      "type": "external",
+      "label": "Tile providers",
+      "sublabel": "OpenStreetMap, CartoDB",
+      "pos": [
+        1100,
+        145
+      ],
+      "size": [
+        200,
+        78
+      ],
+      "sources": [
+        {
+          "path": "pages/Bulk_Extraction.py",
+          "line": 67,
+          "end_line": 69,
+          "label": "TileLayer list"
+        }
+      ]
+    },
+    {
+      "id": "exports",
+      "type": "external",
+      "label": "Downloads",
+      "sublabel": "CSV, GeoJSON, TXT, ZIP",
+      "pos": [
+        830,
+        495
+      ],
+      "size": [
+        195,
+        78
+      ],
+      "sources": [
+        {
+          "path": "pages/Drawing_Polygon.py",
+          "line": 245,
+          "end_line": 251,
+          "label": "download_button set"
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Streamlit server process",
+      "wraps": [
+        "home",
+        "session_state",
+        "copy_coords",
+        "bulk_upload",
+        "draw_polygon",
+        "paste_geohash",
+        "geo_stack",
+        "polygeohasher",
+        "map_render"
+      ],
+      "pad": 26
+    }
+  ],
+  "connections": [
+    {
+      "id": "browser-to-home",
+      "from": "browser",
+      "to": "home",
+      "label": "HTTP :8501",
+      "variant": "emphasis",
+      "labelDy": -52
+    },
+    {
+      "id": "home-to-copy",
+      "from": "home",
+      "to": "copy_coords",
+      "label": "sidebar nav",
+      "labelDx": -45
+    },
+    {
+      "id": "home-to-bulk",
+      "from": "home",
+      "to": "bulk_upload"
+    },
+    {
+      "id": "home-to-draw",
+      "from": "home",
+      "to": "draw_polygon"
+    },
+    {
+      "id": "home-to-paste",
+      "from": "home",
+      "to": "paste_geohash"
+    },
+    {
+      "id": "copy-to-geo",
+      "from": "copy_coords",
+      "to": "geo_stack",
+      "label": "parse to Polygon"
+    },
+    {
+      "id": "bulk-to-geo",
+      "from": "bulk_upload",
+      "to": "geo_stack",
+      "label": "read_file()",
+      "labelDx": -40
+    },
+    {
+      "id": "draw-to-geo",
+      "from": "draw_polygon",
+      "to": "geo_stack",
+      "label": "from_features()"
+    },
+    {
+      "id": "state-store",
+      "from": "home",
+      "to": "session_state",
+      "label": "per-session store",
+      "variant": "dashed",
+      "labelDy": 24
+    },
+    {
+      "id": "geo-to-hasher",
+      "from": "geo_stack",
+      "to": "polygeohasher",
+      "label": "create_geohash_list()",
+      "variant": "emphasis",
+      "labelDy": 24
+    },
+    {
+      "id": "paste-to-hasher",
+      "from": "paste_geohash",
+      "to": "polygeohasher",
+      "label": "geohashes_to_geometry()"
+    },
+    {
+      "id": "hasher-to-map",
+      "from": "polygeohasher",
+      "to": "map_render",
+      "label": "cells",
+      "variant": "emphasis"
+    },
+    {
+      "id": "hasher-to-exports",
+      "from": "polygeohasher",
+      "to": "exports",
+      "label": "serialize all cells",
+      "labelDy": 24
+    },
+    {
+      "id": "map-to-tiles",
+      "from": "map_render",
+      "to": "basemaps",
+      "label": "tile requests",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Four ways in",
+      "items": [
+        "Paste a comma-separated lat/long list",
+        "Upload a dissolved GeoJSON polygon",
+        "Draw a shape on the map, or paste geohashes"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Conversion core",
+      "items": [
+        "polygeohasher turns polygons into geohash cells",
+        "GeoPandas reprojects to EPSG:3857 to buffer non-polygons",
+        "Map preview is capped; exports contain every cell"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Rerun model",
+      "items": [
+        "Streamlit reruns the whole page on every widget change",
+        "Drawn shapes survive only because session_state holds them",
+        "Drawing uses newdraw.py, a custom Folium Draw control"
+      ]
+    }
+  ]
+}
